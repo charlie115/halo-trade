@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HaloTrade: your AI trader, every move explained</title>
+<meta name="description" content="Pick a strategy and an AI trader runs it on Injective, explaining every decision. Your funds stay in your account.">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="{{FAVICON}}">
+<script src="{{THEME_JS}}"></script>
+<link rel="stylesheet" href="{{CSS}}">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>Halo<b>Trade</b></span></a>
+  <p class="net" id="network-note" hidden></p>
+  <nav><span class="wallet-chip" id="wallet-chip" hidden></span><a href="/stats">Stats</a><button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme"></button></nav>
+</header>
+<p class="demo-banner" id="demo-banner" hidden>This is an example account. Every number and headline is made up, and no trade is real. <a href="/">Start your own</a></p>
+<main class="layout" id="layout">
+  <section class="intro">
+    <h1>Your AI trader.<br>Every move explained.</h1>
+    <p class="lede">Pick a strategy. We run it on Injective around the clock, with nothing to install.</p>
+    <figure class="sample" aria-label="An example of how a decision appears">
+      <figcaption class="sample-head"><span>Example</span><span data-bind="ticker">BTC/USDC PERP</span></figcaption>
+      <p class="sample-action">Opened a long</p>
+      <blockquote class="sample-reason">The hourly trend is up and the pullback held. The target is twice as far as the stop.</blockquote>
+      <svg class="sample-chart" viewBox="0 0 400 96" aria-hidden="true">
+        <line class="sample-target" x1="0" y1="12" x2="400" y2="12"/>
+        <line class="sample-stop" x1="0" y1="84" x2="400" y2="84"/>
+        <path class="sample-price" d="M0 74C28 72 52 66 82 60S132 42 162 41 204 46 226 54 250 62 262 60"/>
+        <circle class="sample-halo" cx="262" cy="60" r="10"/>
+        <circle class="sample-entry" cx="262" cy="60" r="4"/>
+      </svg>
+      <dl class="sample-levels">
+        <div><dt>Entry</dt><dd>74,132</dd></div>
+        <div><dt>Stop</dt><dd>73,420</dd></div>
+        <div><dt>Target</dt><dd>75,556</dd></div>
+      </dl>
+    </figure>
+    <p class="trust">Your funds stay in your account. Only you can withdraw.</p>
+    <p class="example"><a href="/demo">See an example account</a></p>
+  </section>
+
+  <div class="flow">
+
+    <section class="agent" id="agent" hidden aria-labelledby="agent-title">
+      <h2 class="visually-hidden" id="agent-title">Agent</h2>
+
+      <header class="dash-head" id="headline">
+        <div class="dash-top">
+          <p class="agent-status" id="agent-status" role="status" tabindex="-1"></p>
+          <div class="dash-controls">
+            <div class="actions" id="agent-actions">
+              <button type="button" id="close-btn" hidden>Close position</button>
+              <button type="button" id="stop-btn" hidden>Stop agent</button>
+              <button type="button" id="start-again-btn" hidden>Start again</button>
+            </div>
+            <div class="agent-confirm" id="close-confirm" hidden>
+              <p>Close at market now?</p>
+              <div class="actions">
+                <button type="button" id="close-yes" class="danger">Close now</button>
+                <button type="button" id="close-no">Keep open</button>
+              </div>
+            </div>
+            <p class="step-note small" id="stop-note" hidden>Stopping does not close a position.</p>
+          </div>
+        </div>
+        <p class="agent-line" id="agent-signin" hidden>Your session ended. <button type="button" class="inline" id="agent-signin-btn">Sign in again</button></p>
+        <p class="step-note small" id="agent-note" hidden></p>
+        <p class="error" role="alert" data-error hidden></p>
+        <div class="dash-numbers">
+          <div class="result" id="result" hidden>
+            <div class="result-figures">
+              <p class="result-number" id="result-number"></p>
+              <p class="result-note" id="result-since"></p>
+              <p class="result-note" id="result-note"></p>
+              <p class="result-note" id="result-hold" hidden></p>
+            </div>
+            <div class="result-curve">
+              <div id="equity-chart"></div>
+              <p class="result-note" id="equity-caption" hidden></p>
+            </div>
+          </div>
+          <dl class="kpis" id="agent-facts" hidden>
+            <div><dt>Strategy</dt><dd id="agent-preset"></dd></div>
+            <div><dt>Equity</dt><dd id="agent-equity"></dd></div>
+            <div><dt>Win rate</dt><dd id="agent-winrate"></dd></div>
+            <div class="kpi-limit"><dt>Today&#39;s loss limit</dt><dd id="agent-limit"></dd><div id="limit-meter"></div></div>
+          </dl>
+        </div>
+        <div class="ask" id="ask" hidden>
+          <form class="ask-form" id="ask-form">
+            <label class="visually-hidden" for="ask-input">Ask your agent</label>
+            <input type="text" id="ask-input" maxlength="2000" autocomplete="off" enterkeyhint="send" placeholder="Ask your agent anything">
+            <button type="submit" class="primary" id="ask-send">Ask</button>
+          </form>
+          <div class="ask-chips">
+            <button type="button" class="ask-chip" data-ask="How is it going so far?">How is it going?</button>
+            <button type="button" class="ask-chip" data-ask="Why did you make the last decision?">Why the last decision?</button>
+            <button type="button" class="ask-chip" data-ask="Make my settings safer.">Make it safer</button>
+          </div>
+        </div>
+        <details class="tech agent-settings" id="agent-settings" hidden>
+          <summary>Settings</summary>
+          <ul id="agent-settings-list"></ul>
+        </details>
+      </header>
+
+      <section class="pane position" id="position-pane" hidden aria-labelledby="position-title">
+        <div class="pane-head"><h3 id="position-title">Position</h3><span class="pane-note" id="position-age"></span></div>
+        <dl class="facts position-now">
+          <dt>Position</dt><dd id="agent-position"></dd>
+          <dt>Unrealized</dt><dd id="agent-pnl"></dd>
+        </dl>
+        <div class="ladder" id="position-ladder" hidden></div>
+        <dl class="facts" id="position-facts">
+          <dt>Stop-loss</dt><dd id="agent-stop"><span id="agent-stop-price"></span> <a id="agent-stop-link" target="_blank" rel="noopener noreferrer" hidden>On chain</a></dd>
+          <dt>If stopped</dt><dd id="agent-loss"></dd>
+          <dt>Take-profit</dt><dd id="agent-take"></dd>
+          <dt>Exit rule</dt><dd id="agent-exit"></dd>
+        </dl>
+        <div class="waiting" id="waiting" hidden>
+          <p class="waiting-title" id="waiting-title"></p>
+          <ul class="checks" id="waiting-list"></ul>
+        </div>
+      </section>
+
+      <div class="dash-row dash-main">
+        <section class="pane chart-pane" id="chart-pane" hidden aria-labelledby="chart-title">
+          <div class="chart-head">
+            <div class="chart-quote">
+              <h3 id="chart-title" data-bind="ticker">BTC/USDC PERP</h3>
+              <p class="chart-price" id="chart-price"></p>
+              <p class="chart-change" id="chart-change"></p>
+              <p class="chart-ohlc" id="chart-ohlc" hidden></p>
+            </div>
+            <div class="segmented" role="group" aria-label="Chart range">
+              <button type="button" data-range="24" aria-pressed="false">1D</button>
+              <button type="button" data-range="72" aria-pressed="true">3D</button>
+              <button type="button" data-range="168" aria-pressed="false">7D</button>
+            </div>
+          </div>
+          <div class="price-chart" id="price-chart"></div>
+          <p class="step-note small" id="chart-empty" hidden>Price history is not available right now.</p>
+          <div class="chart-foot">
+            <ul class="chart-key" aria-hidden="true">
+              <li class="key-entry">Entry</li>
+              <li class="key-win">Exit in profit</li>
+              <li class="key-loss">Exit at a loss</li>
+              <li class="key-check">Checked, no trade</li>
+            </ul>
+            <p class="chart-source" id="chart-source" hidden>Candles from Binance BTCUSDT. Orders fill on Injective.</p>
+          </div>
+        </section>
+
+        <section class="pane feed" id="agent-decisions" hidden aria-labelledby="decisions-title">
+          <h3 id="decisions-title">Decisions</h3>
+          <p class="step-note small" id="decisions-empty" hidden>No decisions yet.</p>
+          <ol class="decisions" id="decisions-list"></ol>
+          <button type="button" class="inline" id="decisions-more" hidden>Show more</button>
+        </section>
+      </div>
+
+      <div class="dash-row">
+        <section class="pane market" id="market" hidden aria-labelledby="market-title">
+          <h3 id="market-title">Market</h3>
+          <dl class="facts" id="market-facts">
+            <dt>Read</dt><dd id="market-read"></dd>
+            <dt>Event risk</dt><dd id="market-risk"></dd>
+            <dt>In the news</dt><dd id="market-themes"></dd>
+            <dt>Funding</dt><dd id="market-funding"></dd>
+            <dt>Fear and Greed</dt><dd id="market-fear"><span id="market-fear-value"></span> <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener noreferrer">alternative.me</a></dd>
+          </dl>
+          <p class="market-summary" id="market-summary" hidden></p>
+          <ol class="market-news" id="market-news" hidden></ol>
+        </section>
+
+        <section class="pane memory" id="memory" hidden aria-labelledby="memory-title">
+          <div class="pane-head"><h3 id="memory-title">What it has learned</h3><span class="pane-note" id="memory-count"></span></div>
+          <p class="step-note small" id="memory-empty">Lessons appear after the first closed trade.</p>
+          <ol class="lessons" id="memory-lessons" hidden></ol>
+          <ul class="playbook" id="memory-playbook" hidden></ul>
+          <p class="step-note small" id="memory-note" hidden>R is a result measured in units of the trade&#39;s planned loss.</p>
+        </section>
+      </div>
+
+      <section class="pane" id="agent-trades" hidden aria-labelledby="trades-title">
+        <h3 id="trades-title">Trades</h3>
+        <p class="step-note small" id="trades-empty" hidden>No trades yet.</p>
+        <ol class="trades" id="trades-list"></ol>
+      </section>
+    </section>
+
+    <section class="manage agent-telegram" id="agent-telegram" hidden aria-labelledby="telegram-title">
+      <div class="manage-head">
+        <h2 id="telegram-title">Telegram</h2>
+        <p id="telegram-state" hidden></p>
+        <a id="telegram-open" target="_blank" rel="noopener" hidden>Open Telegram</a>
+        <button type="button" id="telegram-connect">Connect Telegram</button>
+        <button type="button" id="telegram-disconnect" hidden>Disconnect</button>
+      </div>
+      <p class="step-note small" id="telegram-hint" hidden>Press Connect in Telegram to finish.</p>
+    </section>
+
+    <section class="setup" id="setup" aria-label="Setup">
+      <button type="button" class="setup-toggle" id="setup-toggle" aria-controls="steps" aria-expanded="false" hidden><span>Setup</span><span class="setup-toggle-state" id="setup-toggle-state">Show</span></button>
+      <ol class="steps" id="steps">
+        <li class="step" id="step-connect" data-state="active">
+          <div class="num" aria-hidden="true">1</div>
+          <div class="step-main">
+            <div class="step-head"><h2>Connect your wallet</h2><p class="step-status" data-status></p><button type="button" class="step-toggle" data-toggle hidden>Show details</button></div>
+            <div class="step-body">
+              <p class="step-note">Free, with no transaction. It only proves this wallet is yours. Sign on <span data-bind="host">this site</span> only.</p>
+              <dl class="kv" id="connect-info" hidden>
+                <dt>Wallet</dt><dd data-bind="eth"></dd>
+                <dt>Injective address</dt><dd data-bind="inj"></dd>
+                <dt>Subaccount</dt><dd data-bind="sub"></dd>
+              </dl>
+              <p class="error" role="alert" data-error hidden></p>
+              <div class="actions">
+                <button type="button" id="connect-btn" class="primary">Connect MetaMask</button>
+                <button type="button" id="prove-btn" class="primary" hidden>Sign ownership message</button>
+              </div>
+              <p class="step-note small" id="no-wallet" hidden>No wallet found. Install MetaMask, or open this page in its app browser.</p>
+            </div>
+          </div>
+        </li>
+
+        <li class="step" id="step-deposit" data-state="pending">
+          <div class="num" aria-hidden="true">2</div>
+          <div class="step-main">
+            <div class="step-head"><h2>Deposit USDC</h2><p class="step-status" data-status></p><button type="button" class="step-toggle" data-toggle hidden>Add more</button></div>
+            <div class="step-body">
+              <dl class="kv">
+                <dt>In your wallet</dt><dd id="wallet-usdc">Not checked yet</dd>
+                <dt>In the subaccount</dt><dd id="sub-usdc">Not checked yet</dd>
+                <dt>Allowed</dt><dd><span data-bind="min-deposit">50</span> to <span data-bind="max-deposit">200</span> USDC</dd>
+              </dl>
+              <label class="field" for="amount-input"><span>Amount</span>
+                <input id="amount-input" type="text" inputmode="decimal" autocomplete="off" placeholder="50">
+              </label>
+              <p class="step-note small">Trading can lose some or all of this deposit.</p>
+              <p class="error" role="alert" data-error hidden></p>
+              <p class="step-note small" data-note hidden></p>
+              <div class="actions">
+                <button type="button" id="deposit-btn" class="primary">Deposit USDC</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="step" id="step-grant" data-state="pending">
+          <div class="num" aria-hidden="true">3</div>
+          <div class="step-main">
+            <div class="step-head"><h2>Grant trading access</h2><p class="step-status" data-status></p><button type="button" class="step-toggle" data-toggle hidden>Show details</button></div>
+            <div class="step-body">
+              <div class="permission" aria-label="What this grant allows">
+                <p class="perm-line">Can place market, stop and take-profit orders on the <span data-bind="asset">BTC</span> perp, and cancel them.</p>
+                <p class="perm-line">Cannot withdraw or transfer.</p>
+              </div>
+              <details class="tech">
+                <summary>What you will sign</summary>
+                <dl class="kv">
+                  <dt>Market</dt><dd data-bind="ticker">BTC/USDC PERP</dd>
+                  <dt>Market ID</dt><dd id="market-id"></dd>
+                  <dt>Subaccount</dt><dd data-bind="sub">Connect your wallet first</dd>
+                  <dt>Grantee (our server)</dt><dd data-bind="grantee"></dd>
+                  <dt>Expires</dt><dd id="grant-expiry"></dd>
+                </dl>
+                <ul id="grant-list"></ul>
+              </details>
+              <p class="error" role="alert" data-error hidden></p>
+              <p class="step-note small" data-note hidden></p>
+              <div class="actions">
+                <button type="button" id="grant-btn" class="primary">Sign the grant</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="step" id="step-strategy" data-state="pending">
+          <div class="num" aria-hidden="true">4</div>
+          <div class="step-main">
+            <div class="step-head"><h2>Choose a strategy</h2><p class="step-status" data-status></p></div>
+            <div class="step-body">
+              <fieldset class="presets" id="presets">
+                <legend class="visually-hidden">Strategy</legend>
+              </fieldset>
+              <details class="tune" id="tune" hidden>
+                <summary><span class="tune-title">Adjust settings</span><span class="tune-mark" id="tune-mark" hidden>Edited</span></summary>
+                <div class="tune-fields" id="tune-fields"></div>
+                <button type="button" class="inline" id="tune-reset" hidden>Reset to the preset</button>
+              </details>
+              <dl class="facts" id="plan" aria-label="What will happen">
+                <dt>Market</dt><dd id="plan-market"></dd>
+                <dt>Checks</dt><dd id="plan-checks"></dd>
+                <dt>Stop distance</dt><dd id="plan-stop"></dd>
+                <dt>Worst loss per trade</dt><dd id="plan-loss"></dd>
+                <dt>Today&#39;s loss limit</dt><dd id="plan-limit"></dd>
+                <dt>Deposit limit</dt><dd id="plan-deposit"></dd>
+              </dl>
+              <p class="step-note" id="agent-unavailable" hidden>The agent is not available on this server yet.</p>
+              <p class="step-note caution" id="start-caution">The agent trades right away and can open a position.</p>
+              <p class="error" role="alert" data-error hidden></p>
+              <div class="actions">
+                <button type="button" id="start-btn" class="primary" disabled>Start agent</button>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="manage" id="funds" hidden aria-labelledby="funds-title">
+      <div class="manage-head">
+        <h2 id="funds-title">Funds</h2>
+        <p class="funds-available" id="funds-available"></p>
+        <button type="button" id="withdraw-open">Withdraw</button>
+      </div>
+      <div class="funds-form" id="withdraw-form" hidden>
+        <p class="step-note caution" id="withdraw-warning" hidden>A position is open. Its margin cannot be withdrawn until it closes.</p>
+        <label class="field" for="withdraw-amount"><span>Amount</span>
+          <input id="withdraw-amount" type="text" inputmode="decimal" autocomplete="off">
+        </label>
+        <p class="error" role="alert" data-error hidden></p>
+        <p class="step-note small" id="withdraw-note" hidden></p>
+        <div class="actions">
+          <button type="button" id="withdraw-max">Max</button>
+          <button type="button" id="withdraw-btn" class="primary">Sign withdrawal</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="manage" id="manage" hidden aria-labelledby="manage-title">
+      <div class="manage-head">
+        <h2 id="manage-title">Access</h2>
+        <button type="button" id="revoke-btn" class="danger" hidden>Revoke access</button>
+      </div>
+      <p id="manage-state" hidden></p>
+      <div class="agent-confirm" id="revoke-confirm" hidden>
+        <p>An open position stays open after you revoke.</p>
+        <div class="actions">
+          <button type="button" id="revoke-yes" class="danger">Revoke anyway</button>
+          <button type="button" id="revoke-no">Keep access</button>
+        </div>
+      </div>
+      <p class="error" role="alert" data-error hidden></p>
+      <div id="revoke-followup" hidden>
+        <p class="once" id="revoke-once">The agent has stopped. One step is left: remove the grant on chain.</p>
+        <p id="revoke-position" class="step-note" hidden></p>
+        <div class="agent-confirm" id="revoked-close-confirm" hidden>
+          <p>Close at market now?</p>
+          <div class="actions">
+            <button type="button" id="revoked-close-yes" class="danger">Close now</button>
+            <button type="button" id="revoked-close-no">Keep open</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="revoked-close-btn" hidden>Close position</button>
+          <button type="button" id="revoke-chain-btn" class="primary">Remove the grant on chain</button>
+        </div>
+        <p class="step-note small" id="revoke-chain-note" hidden></p>
+      </div>
+    </section>
+  </div>
+</main>
+<button type="button" class="chat-launch" id="chat-launch" aria-controls="chat" aria-expanded="false" hidden><span class="chat-dot" aria-hidden="true"></span><span>Ask<span class="chat-launch-rest"> your agent</span></span></button>
+<aside class="chat" id="chat" aria-label="Chat with your agent" hidden>
+  <header class="chat-head">
+    <div>
+      <h2>Your agent</h2>
+      <p class="chat-sub" id="chat-sub"></p>
+    </div>
+    <button type="button" class="chat-close" id="chat-close" aria-label="Close chat"></button>
+  </header>
+  <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="Conversation" tabindex="0"></div>
+  <div class="chat-chips" id="chat-chips">
+    <button type="button" class="ask-chip" data-ask="How is it going so far?">How is it going?</button>
+    <button type="button" class="ask-chip" data-ask="Why did you make the last decision?">Why the last decision?</button>
+    <button type="button" class="ask-chip" data-ask="What are my settings?">What are my settings?</button>
+    <button type="button" class="ask-chip" data-ask="Make my settings safer.">Make it safer</button>
+  </div>
+  <form class="chat-form" id="chat-form">
+    <label class="visually-hidden" for="chat-input">Message</label>
+    <textarea id="chat-input" rows="1" maxlength="2000" enterkeyhint="send" placeholder="Message your agent"></textarea>
+    <button type="submit" class="primary" id="chat-send">Send</button>
+  </form>
+  <p class="chat-foot"><span class="chat-rule" id="chat-rule">Cannot trade or move funds</span><span id="chat-left"></span></p>
+</aside>
+<footer class="foot">
+  <section class="risk" aria-label="Risk">
+    <p>Trading perpetual futures can lose your whole deposit, and a stop can fill worse or fail in a fast market. No profit is promised. Not financial advice. <span id="testnet-note" hidden>On testnet, no real money is used.</span></p>
+  </section>
+</footer>
+<script type="module" src="{{MAIN_JS}}"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "halo-trade-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/eip712.test.mjs test/guard.test.mjs test/demo.test.mjs test/tune.test.mjs test/chat.test.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/instrument-sans": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@injectivelabs/core-proto-ts-v2": "1.20.5",
+    "@injectivelabs/networks": "1.20.66",
+    "@injectivelabs/sdk-ts": "1.20.66",
+    "@injectivelabs/ts-types": "1.20.66",
+    "@injectivelabs/utils": "1.20.66"
+  },
+  "devDependencies": {
+    "@metamask/eth-sig-util": "9.0.0",
+    "@playwright/test": "1.61.0",
+    "@spruceid/siwe-parser": "2.1.2",
+    "esbuild": "0.28.2",
+    "ethers": "6.17.0"
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HaloTrade public stats</title>
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="{{FAVICON}}">
+<script src="{{THEME_JS}}"></script>
+<link rel="stylesheet" href="{{CSS}}">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>Halo<b>Trade</b></span></a>
+  <p class="net" id="network-note" hidden></p>
+  <nav><a href="/">Start</a><button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme"></button></nav>
+</header>
+<main class="page">
+  <section class="intro stats-intro">
+    <h1>Public stats</h1>
+    <p class="lede" id="stats-asof">Loading figures.</p>
+  </section>
+  <p class="error" role="alert" id="stats-error" hidden></p>
+  <dl class="tiles" id="stats-tiles">
+    <div><dt>Funded wallets</dt><dd id="s-funded">0</dd></div>
+    <div><dt>Total deposits</dt><dd id="s-deposits">0 USDC</dd></div>
+    <div><dt>Volume, all time</dt><dd id="s-volume">$0</dd></div>
+    <div><dt>Volume, last 24 hours</dt><dd id="s-volume24">$0</dd></div>
+    <div><dt>Trades</dt><dd id="s-trades">0</dd></div>
+    <div><dt>Open positions</dt><dd id="s-open">0</dd></div>
+    <div><dt>Positions with a live stop</dt><dd id="s-stop">No open positions</dd></div>
+  </dl>
+  <section class="fills" aria-labelledby="fills-title">
+    <h2 id="fills-title">Latest fills</h2>
+    <p class="step-note" id="fills-empty" hidden>No fills yet.</p>
+    <ol id="fills-list"></ol>
+  </section>
+  <p class="step-note small stats-note">Totals name no wallets. Each fill&#39;s explorer page shows the wallet that traded.</p>
+</main>
+<footer class="foot">
+  <p>Not financial advice.</p>
+</footer>
+<script type="module" src="{{STATS_JS}}"></script>
+</body>
+</html>

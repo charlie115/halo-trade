@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+*.sqlite*
+data/
+node_modules/
+web/dist/
+.pytest_cache/
+*.key
+docs/private/
+compose.deploy.yaml
+.public/

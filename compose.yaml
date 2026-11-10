@@ -1,0 +1,32 @@
+# Always run with an explicit project name:  docker compose -p halo-trade -f compose.yaml ...
+# Shares nothing with HaloArena (no networks, volumes or databases).
+name: halo-trade
+services:
+  server:
+    build:
+      context: .
+      # What the page accepts from the server, fixed at build time. Required on mainnet.
+      args:
+        HALO_EXPECTED_GRANTEE_TESTNET: ${HALO_EXPECTED_GRANTEE_TESTNET:-}
+        HALO_EXPECTED_MARKET_ID_TESTNET: ${HALO_EXPECTED_MARKET_ID_TESTNET:-}
+        HALO_EXPECTED_GRANTEE_MAINNET: ${HALO_EXPECTED_GRANTEE_MAINNET:-}
+        HALO_EXPECTED_MARKET_ID_MAINNET: ${HALO_EXPECTED_MARKET_ID_MAINNET:-}
+    restart: unless-stopped
+    environment:
+      HALO_CHAIN_BACKEND: ${HALO_CHAIN_BACKEND:-mock}
+      HALO_DB_PATH: /data/halo.sqlite
+    env_file:
+      - path: .env
+        required: false
+    volumes: [halo-data:/data]
+    ports: ["127.0.0.1:18080:8080"]
+  test:
+    build:
+      context: .
+      target: test
+    profiles: [test]
+    command: ["pytest", "-q"]
+    environment:
+      HALO_CHAIN_BACKEND: mock
+volumes:
+  halo-data: {}

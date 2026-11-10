@@ -1,0 +1,14 @@
+**/.git
+**/data
+**/*.sqlite*
+**/*.key
+**/*.pem
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+**/testnet_wallets.json
+**/.public
